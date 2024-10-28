@@ -1,0 +1,37 @@
+name: Generate Profanity List
+
+on:
+  push:
+    branches:
+      - 'main'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+    - name: Set up Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: '20'
+    - name: Install dependencies
+      run: npm install
+    - name: Run Regex generation script
+      run: node generate_list
+    - name: List files in directory
+      run: ls -la
+    - name: Update Profanity List
+      run: |
+        git config --local user.email "github-actions@github.com"
+        git config --local user.name "GitHub Action"
+        git checkout --orphan temp-branch
+        git reset
+        git add profanity-list.json
+        git commit -m "🔄 Update Profanity List"
+        git push -f origin temp-branch:list
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
